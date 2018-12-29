@@ -1,0 +1,49 @@
+.full-vh {
+  height: 100vh;
+}
+.ui.root-grid {
+  height: 100vh;
+  margin-top: 0px;
+}
+.ui.root-grid > .row {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.ui.md-thin.left.sidebar {
+  width: 80px;
+  ~ .pusher {
+    transform: translate3d(80px, 0, 0);
+  }
+}
+.ui.md-wide.left.sidebar {
+  width: 250px;
+  ~ .pusher {
+    transform: translate3d(250px, 0, 0);
+  }
+}
+
+.dashboard-sidebar {
+  &.ui.visible.push.sidebar {
+    transition: transform 0.5s ease, width 0.5s ease;
+    overflow: hidden;
+    background: #5b6f87;
+
+    .accordion {
+      background: #5b6f87;
+    }
+  }
+
+  .ui.accordion.menu .item .title,
+  .ui.vertical.menu .item {
+    color: #bfc7ff;
+    font-weight: bold;
+  }
+
+  .ui.vertical.menu {
+    .item:hover,
+    .item.active .icon {
+      color: white;
+    }
+  }
+}
