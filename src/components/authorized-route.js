@@ -4,7 +4,7 @@ import { Route, Redirect } from 'react-router-dom';
 
 import * as selectors from 'selectors';
 
-class AuthorizedRoute extends Component {
+export class AuthorizedRoute extends Component {
   render() {
     const { component: Component, profile, ...rest } = this.props;
     return (

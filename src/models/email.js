@@ -10,14 +10,25 @@ Email.fields = {
   from: fk('user', 'fromEmail'),
   subject: attr(),
   body: attr(),
-  creationTime: attr()
+  creationTime: attr({ getDefault: () => new Date().getTime() }),
+  tags: many('tag', 'tagEmails'),
+  unread: attr({ getDefault: () => true })
 };
 Email.reducer = function(action, Email, session) {
   switch (action.type) {
+    case actionList.MAIL_AGGREGATE_SUCCESS:
+      action.payload.response.emails.forEach(email => {
+        Email.create(email);
+      });
+      break;
+    case actionList.MARK_EMAIL_SUCCESS:
+      action.payload.response.emails.forEach(email => {
+        Email.withId(email.id).update(email);
+      });
+      break;
     case actionList.SEND_EMAIL_SUCCESS:
-      const { email, user } = action.payload.response;
-      const emailItem = Email.create(email);
-      emailItem.from.update(user);
+      const { email } = action.payload.response;
+      Email.create(email);
       break;
     default:
       break;

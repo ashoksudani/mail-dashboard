@@ -1,22 +1,26 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Container, Grid, Loader, Message } from 'semantic-ui-react';
+import { Grid, Loader } from 'semantic-ui-react';
+import { Route } from 'react-router-dom';
 
 import MailHeader from 'components/mail-header';
 import MailSidebar from 'components/mail-sidebar';
 import MailContent from 'components/mail-content';
+import MessageSnackbar from 'components/message-snackbar';
 
 import { createMailAggregateRequest } from 'actions';
 import * as selectors from 'selectors';
 
 const actionsErrorSelector = selectors.createErrorSelector([
   'MAIL_AGGREGATE',
-  'SEND_EMAIL'
+  'SEND_EMAIL',
+  'MARK_EMAIL'
 ]);
 const actionsIsLoadingSelector = selectors.createLoadingSelector([
   'MAIL_AGGREGATE',
   'SEND_EMAIL'
 ]);
+const actionsSuccessSelector = selectors.createSuccessSelector(['SEND_EMAIL']);
 
 class MailDashBoard extends Component {
   componentDidMount() {
@@ -24,33 +28,34 @@ class MailDashBoard extends Component {
   }
 
   render() {
-    const { isLoading, errorMessage } = this.props;
+    let { isLoading, errorMessage, successMessage } = this.props;
 
     if (isLoading) {
-      return <Loader />;
+      return <Loader active />;
     }
 
     return (
-      <Container fluid className="main-dashboard full-vh">
-        <Grid padded>
+      <div className="full-vh mail-dashboard">
+        <Grid padded stackable>
           <Grid.Row>
             <Grid.Column>
               <MailHeader toggleSidebar={this.props.toggleSidebar} />
             </Grid.Column>
           </Grid.Row>
+          <MessageSnackbar
+            errorMessage={errorMessage}
+            successMessage={successMessage}
+          />
           <Grid.Row className="mail-inbox">
             <Grid.Column width={4}>
-              <MailSidebar />
+              <Route path="/mail/:filter?" component={MailSidebar} />
             </Grid.Column>
-            <Grid.Column width={12}>
-              {errorMessage.map(
-                (error, i) => error && <Message key={i} error content={error} />
-              )}
-              <MailContent />
+            <Grid.Column mobile={16} tablet={12} computer={12}>
+              <Route path="/mail/:filter?" component={MailContent} />
             </Grid.Column>
           </Grid.Row>
         </Grid>
-      </Container>
+      </div>
     );
   }
 }
@@ -59,7 +64,8 @@ const mapStateToProps = (state, props) => {
   return {
     profile: selectors.selectProfile(state),
     isLoading: actionsIsLoadingSelector(state),
-    errorMessage: actionsErrorSelector(state)
+    errorMessage: actionsErrorSelector(state),
+    successMessage: actionsSuccessSelector(state)
   };
 };
 

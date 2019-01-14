@@ -4,11 +4,12 @@ import { Menu, Label, Icon, Button } from 'semantic-ui-react';
 
 import ComposeEmail from 'components/compose-email';
 import { createSendEmailRequest } from 'actions';
+import * as selectors from 'selectors';
 
 class MailSidebar extends Component {
   state = {
     openModel: false,
-    activeItem: 'inbox'
+    activeItem: this.props.filter
   };
 
   openComposeEmail = () => {
@@ -23,11 +24,13 @@ class MailSidebar extends Component {
     this.props.createSendEmailRequest(email);
   };
 
-  handleItemClick = (e, { name }) => this.setState({ activeItem: name });
+  handleItemClick = (e, { name }) => {
+    this.setState({ activeItem: name });
+    this.props.history.push('/mail/' + name);
+  };
 
   render() {
     const { activeItem } = this.state;
-
     return (
       <>
         <Button color="teal" fluid onClick={this.openComposeEmail}>
@@ -45,7 +48,7 @@ class MailSidebar extends Component {
             active={activeItem === 'inbox'}
             onClick={this.handleItemClick}
           >
-            <Label color="teal">0</Label>
+            <Label color="orange">{this.props.inboxEmails.length}</Label>
             <Icon name="inbox" />
             Inbox
           </Menu.Item>
@@ -55,7 +58,7 @@ class MailSidebar extends Component {
             active={activeItem === 'sent'}
             onClick={this.handleItemClick}
           >
-            <Label>0</Label>
+            <Label color="teal">{this.props.sentEmails.length}</Label>
             <Icon name="mail" />
             Sent Mail
           </Menu.Item>
@@ -65,7 +68,7 @@ class MailSidebar extends Component {
             active={activeItem === 'trash'}
             onClick={this.handleItemClick}
           >
-            <Label>0</Label>
+            <Label color="red">{this.props.trashEmails.length}</Label>
             <Icon name="trash" />
             Trash
           </Menu.Item>
@@ -75,11 +78,21 @@ class MailSidebar extends Component {
   }
 }
 
+const mapStateToProps = (state, props) => {
+  const filter = props.match.params.filter || 'inbox';
+  return {
+    filter: filter,
+    inboxEmails: selectors.selectEmails(state, 'inbox'),
+    sentEmails: selectors.selectEmails(state, 'sent'),
+    trashEmails: selectors.selectEmails(state, 'trash')
+  };
+};
+
 const mapDispatchToProps = {
   createSendEmailRequest
 };
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(MailSidebar);

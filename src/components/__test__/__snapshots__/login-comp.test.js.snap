@@ -1,0 +1,94 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render login form when profile is not authenticated 1`] = `
+<div
+  className="login-form"
+>
+  <style>
+    
+        body &gt; div,
+        body &gt; div &gt; div,
+        body &gt; div &gt; div &gt; div.login-form {
+          height: 100%;
+        }
+      
+  </style>
+  <div
+    className="ui centered center aligned middle aligned grid"
+    style={
+      Object {
+        "height": "100%",
+      }
+    }
+  >
+    <div
+      className="column"
+      style={
+        Object {
+          "maxWidth": 450,
+        }
+      }
+    >
+      <h2
+        className="ui teal center aligned header"
+      >
+        <div
+          className="content"
+        >
+          Log-in to Mailbox
+        </div>
+      </h2>
+      <form
+        className="ui large form"
+        onSubmit={[Function]}
+      >
+        <div
+          className="field"
+        >
+          <div
+            className="ui fluid left icon input"
+          >
+            <input
+              name="emailId"
+              onChange={[Function]}
+              placeholder="E-mail address"
+              type="text"
+              value=""
+            />
+            <i
+              aria-hidden="true"
+              className="user icon"
+            />
+          </div>
+        </div>
+        <div
+          className="field"
+        >
+          <div
+            className="ui fluid left icon input"
+          >
+            <input
+              name="password"
+              onChange={[Function]}
+              placeholder="Password"
+              type="password"
+              value=""
+            />
+            <i
+              aria-hidden="true"
+              className="lock icon"
+            />
+          </div>
+        </div>
+        <button
+          className="ui teal large fluid button"
+          onClick={[Function]}
+          type="submit"
+        >
+          Login
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+`;

@@ -8,10 +8,7 @@ const resetFakeDatabase = {
       firstName: 'UserOne',
       lastName: 'OneLastN',
       password: 'userone',
-      sentEmails: [],
-      readEmails: [],
-      unreadEmails: [],
-      deletedEmails: [],
+      emails: [],
       contacts: [2, 3]
     },
     2: {
@@ -20,11 +17,8 @@ const resetFakeDatabase = {
       firstName: 'UserTwo',
       lastName: 'TwoLastN',
       password: 'usertwo',
-      sentEmails: [],
-      readEmails: [],
-      unreadEmails: [],
-      deletedEmails: [],
-      contacts: [1]
+      emails: [],
+      contacts: [1, 3]
     },
     3: {
       id: 3,
@@ -32,14 +26,16 @@ const resetFakeDatabase = {
       firstName: 'UserThree',
       lastName: 'ThreeLastN',
       password: 'userthree',
-      sentEmails: [],
-      readEmails: [],
-      unreadEmails: [],
-      deletedEmails: [],
+      emails: [],
       contacts: [1, 2]
     }
   },
-  emails: []
+  tags: {
+    inbox: { id: 1, label: 'inbox' },
+    trash: { id: 2, label: 'trash' },
+    sent: { id: 3, label: 'sent' }
+  },
+  emails: {}
 };
 
 const getFakeDatabase = () => {
@@ -56,10 +52,7 @@ const getFakeDatabase = () => {
 };
 
 const saveFakeDatabase = fakeDatabase => {
-  window.localStorage.setItem(
-    'fakeDatabase',
-    JSON.stringify(resetFakeDatabase)
-  );
+  window.localStorage.setItem('fakeDatabase', JSON.stringify(fakeDatabase));
 };
 
 const delay = ms =>
@@ -67,7 +60,7 @@ const delay = ms =>
     setTimeout(resolve, ms);
   });
 
-const login = user => {
+const login = ({ user }) => {
   return delay(500).then(() => {
     // if (Math.random() > 0.5) {
     //   throw new Error('Server is not available.');
@@ -92,7 +85,19 @@ const login = user => {
   });
 };
 
-const mailAggregate = userId => {
+const logout = () => {
+  return delay(500).then(() => {
+    // if (Math.random() > 0.5) {
+    //   throw new Error('Server is not available.');
+    // }
+
+    return {
+      message: 'Logout successfully.'
+    };
+  });
+};
+
+const mailAggregate = ({ userId }) => {
   return delay(500).then(() => {
     // if (Math.random() > 0.5) {
     //   throw new Error('Server is not available.');
@@ -109,53 +114,132 @@ const mailAggregate = userId => {
       return rest;
     });
 
+    const { password, ...restProfileUser } = foundUser;
+
     return {
       contacts,
-      emails: []
+      emails: foundUser.emails.map(emailId => fakeDatabase.emails[emailId]),
+      tags: getTagsAsList(fakeDatabase),
+      profileUser: restProfileUser
     };
   });
 };
 
-const sendEmail = email => {
+const sendEmail = ({ email }) => {
   return delay(500).then(() => {
     // if (Math.random() > 0.5) {
     //   throw new Error('Server is not available.');
     // }
 
     let fakeDatabase = getFakeDatabase();
-
-    email.id = nanoid();
-    email.creationTime = new Date().getTime();
-    fakeDatabase.emails.push(email);
-
     const fakeDbUsers = fakeDatabase.users;
-    fakeDbUsers[email.from].sentEmails.push(email.id);
-    fakeDbUsers[email.from].sentEmails = [
-      ...new Set(fakeDbUsers[email.from].sentEmails)
-    ];
 
-    const pushUnreadEmail = (userId, email) => {
-      fakeDbUsers[userId].unreadEmails.push(email.id);
-      fakeDbUsers[userId].unreadEmails = [
-        ...new Set(fakeDbUsers[userId].unreadEmails)
-      ];
-    };
-    email.to.forEach(userId => pushUnreadEmail(userId, email));
-    email.cc.forEach(userId => pushUnreadEmail(userId, email));
+    email.tags = [];
+    email.unread = true;
+
+    //add email as sent to from user
+    const fromEmail = cloneEmail(email);
+    fromEmail.tags = pushToListUniquely(
+      fromEmail.tags,
+      fakeDatabase.tags.sent.id
+    );
+    fakeDbUsers[email.from].emails.push(fromEmail.id);
+    fakeDatabase.emails[fromEmail.id] = fromEmail;
+
+    [...new Set([...email.to, ...email.cc])].forEach(userId => {
+      //if fromUser is also in to/cc then just add tag
+      if (userId === email.from) {
+        fromEmail.tags = pushToListUniquely(
+          fromEmail.tags,
+          fakeDatabase.tags.inbox.id
+        );
+        return;
+      }
+
+      const toEmail = cloneEmail(email);
+      toEmail.tags = pushToListUniquely(
+        toEmail.tags,
+        fakeDatabase.tags.inbox.id
+      );
+      fakeDbUsers[userId].emails.push(toEmail.id);
+      fakeDatabase.emails[toEmail.id] = toEmail;
+    });
 
     saveFakeDatabase(fakeDatabase);
 
     return {
-      email: email,
-      user: fakeDbUsers[email.from]
+      email: fromEmail,
+      user: fakeDbUsers[email.from],
+      message: 'Email sent successfully'
     };
   });
 };
 
+const markEmail = ({ emailId, markAs }) => {
+  return delay(100).then(() => {
+    // if (Math.random() > 0.5) {
+    //   throw new Error('Server is not available.');
+    // }
+
+    const emailIdList = Array.isArray(emailId) ? emailId : [emailId];
+
+    let fakeDatabase = getFakeDatabase();
+    let message;
+
+    emailIdList.forEach(emailId => {
+      const email = fakeDatabase.emails[emailId];
+      switch (markAs) {
+        case 'read':
+          email.unread = false;
+          message = 'Email marked as read successfully!';
+          break;
+        case 'unread':
+          email.unread = true;
+          message = 'Email marked as unread successfully!';
+          break;
+        case 'trash':
+          email.tags = pushToListUniquely(
+            email.tags,
+            fakeDatabase.tags.trash.id
+          );
+          message = 'Email moved to trash successfully!';
+          break;
+        default:
+          break;
+      }
+    });
+
+    saveFakeDatabase(fakeDatabase);
+
+    return {
+      emails: emailIdList.map(emailId => fakeDatabase.emails[emailId]),
+      message
+    };
+  });
+};
+
+const getTagsAsList = fakeDatabase => {
+  return Object.keys(fakeDatabase.tags).map(
+    tagKey => fakeDatabase.tags[tagKey]
+  );
+};
+
+const pushToListUniquely = (list, value) => {
+  list.push(value);
+  return [...new Set(list)];
+};
+
+const cloneEmail = email => {
+  email.id = nanoid();
+  return JSON.parse(JSON.stringify(email));
+};
+
 const api = {
   login,
+  logout,
   mailAggregate,
-  sendEmail
+  sendEmail,
+  markEmail
 };
 
 export default api;

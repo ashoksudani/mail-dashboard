@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders passed component of route if profile is authenticated 1`] = `
+<div
+  id="sample-div"
+>
+  Sample Div
+</div>
+`;

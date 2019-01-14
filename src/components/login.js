@@ -10,7 +10,7 @@ import * as selectors from 'selectors';
 const loginErrorSelector = selectors.createErrorSelector('LOGIN');
 const loginIsLoadingSelector = selectors.createLoadingSelector('LOGIN');
 
-class Login extends Component {
+export class Login extends Component {
   state = {
     form: {
       emailId: '',
@@ -92,7 +92,7 @@ class Login extends Component {
             {showMessage && (
               <Message error content="Please fill all required fields." />
             )}
-            {errorMessage && <Message error content={errorMessage} />}
+            {errorMessage[0] && <Message error content={errorMessage[0]} />}
 
             <Form size="large" onSubmit={this.onFormSubmit} loading={isLoading}>
               <Form.Input

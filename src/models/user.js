@@ -8,10 +8,7 @@ User.fields = {
   firstName: attr(),
   lastName: attr(),
   emailId: attr(),
-  unreadEmails: many('email', 'unreadEmailsUser'),
-  readEmails: many('email', 'readEmailsUser'),
-  sentEmails: many('email', 'sentEmailsUser'),
-  deletedEmails: many('email', 'deletedEmailsUser'),
+  emails: many('email', 'emailsUser'),
   contacts: many('user', 'contactsUser')
 };
 User.reducer = function(action, User, session) {
@@ -20,6 +17,12 @@ User.reducer = function(action, User, session) {
       action.payload.response.contacts.forEach(user => {
         User.create(user);
       });
+      const profileUser = action.payload.response.profileUser;
+      User.withId(profileUser.id).update(profileUser);
+      break;
+    case actionList.SEND_EMAIL_SUCCESS:
+      const { user } = action.payload.response;
+      User.withId(user.id).update(user);
       break;
     default:
       break;

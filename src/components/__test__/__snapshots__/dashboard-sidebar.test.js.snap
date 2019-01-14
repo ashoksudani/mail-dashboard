@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it should render expected elements when expandSidebar is false or true 1`] = `
+<div
+  className="ui push left visible sidebar md-thin dashboard-sidebar"
+>
+  <div
+    className="ui vertical labeled icon accordion ui fluid menu"
+  >
+    <a
+      className="active item"
+      onClick={[Function]}
+    >
+      <i
+        aria-hidden="true"
+        className="th large icon"
+      />
+    </a>
+    <a
+      className="item"
+      onClick={[Function]}
+    >
+      <i
+        aria-hidden="true"
+        className="mail icon"
+      />
+    </a>
+  </div>
+</div>
+`;

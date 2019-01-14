@@ -1,6 +1,8 @@
 .full-vh {
   height: 100vh;
 }
+
+#root,
 .ui.root-grid {
   height: 100vh;
   margin-top: 0px;
@@ -14,6 +16,7 @@
   width: 80px;
   ~ .pusher {
     transform: translate3d(80px, 0, 0);
+    padding-right: 80px;
   }
 }
 .ui.md-wide.left.sidebar {

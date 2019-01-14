@@ -3,7 +3,7 @@ const createErrorSelector = action => state => {
     return action.map(action => state.error[action]);
   }
 
-  return state.error[action];
+  return [state.error[action]];
 };
 
 export default createErrorSelector;

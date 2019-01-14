@@ -1,10 +1,36 @@
+.mail-dashboard {
+  background: #eee;
+}
 .ui .row.mail-inbox {
   padding: 2rem;
-  background: #eee;
 }
 .mail-header {
   background: #fff;
 }
-.main-dashboard {
-  background: #eee;
+
+.ui.grid .row-mail-item {
+  padding: 0;
+  cursor: pointer;
+
+  &.unread {
+    background: #fff;
+  }
+}
+
+.editor-read-only .rdw-editor-toolbar {
+  border: none;
+}
+
+.md-floating-container {
+  position: relative;
+}
+
+.md-border-less {
+  border: 0px !important;
+  &.ui.compact.menu {
+    box-shadow: none;
+  }
+}
+.ui .md-icon-only .icon {
+  margin: 0px;
 }

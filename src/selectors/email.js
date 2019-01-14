@@ -1,41 +1,60 @@
 import { createSelector } from 'redux-orm';
 import orm from 'models/orm';
 
-import { selectUser } from 'selectors/user';
+import * as tagSelector from 'selectors/tag';
 
 const selectAllEmails = createSelector(
   orm,
   state => state.db,
   session => {
-    return session.email.all().toRefArray();
+    const emails = session.profile
+      .first()
+      .user.emails.all()
+      .toModelArray()
+      .map(email => {
+        return Object.assign({}, email.ref, {
+          to: email.to.toRefArray(),
+          cc: email.cc.toRefArray(),
+          tags: email.tags.toRefArray(),
+          tagIds: email.tags.toRefArray().map(tag => tag.id),
+          from: email.from.ref
+        });
+      });
+    return emails.sort((a, b) => b.creationTime - a.creationTime);
   }
 );
 
-const selectEmails = (state, userId, filter) => {
-  const user = selectUser(state, userId);
+const selectEmails = (state, filter) => {
   const allEmails = selectAllEmails(state);
+  const trashTag = tagSelector.selectTrashTag(state);
 
   switch (filter) {
-    case 'inbox':
-      return selectInbox(allEmails, user);
     case 'sent':
-      return selectSent(allEmails, user);
+      const sentTag = tagSelector.selectSentTag(state);
+      return selectSent(state, allEmails, sentTag, trashTag);
     case 'trash':
-      return selectTrash(allEmails, user);
+      return selectTrash(state, allEmails, trashTag);
+    case 'inbox':
     default:
-      return [];
+      const inboxTag = tagSelector.selectInboxTag(state);
+      return selectInbox(state, allEmails, inboxTag, trashTag);
   }
 };
-const selectInbox = (allEmails, user) => {
-  return [...user.unreadEmails, ...user.readEmails].map(
-    emailId => allEmails[emailId]
+
+const selectInbox = (state, allEmails, inboxTag, trashTag) => {
+  return allEmails.filter(
+    email =>
+      email.tagIds.includes(inboxTag.id) && !email.tagIds.includes(trashTag.id)
   );
 };
-const selectSent = (allEmails, user) => {
-  return user.sentEmails.map(emailId => allEmails[emailId]);
+const selectSent = (state, allEmails, sentTag, trashTag) => {
+  return allEmails.filter(
+    email =>
+      email.tagIds.includes(sentTag.id) && !email.tagIds.includes(trashTag.id)
+  );
 };
-const selectTrash = (allEmails, user) => {
-  return user.deletedEmails.map(emailId => allEmails[emailId]);
+const selectTrash = (state, allEmails, trashTag) => {
+  return allEmails.filter(email => email.tagIds.includes(trashTag.id));
 };
 
 export { selectEmails };

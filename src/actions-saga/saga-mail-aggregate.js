@@ -5,7 +5,7 @@ import api from 'services';
 
 export default function* mailAggregate(action) {
   try {
-    const response = yield call(api.mailAggregate, action.payload.userId);
+    const response = yield call(api.mailAggregate, action.payload);
     yield put(actions.createMailAggregateSuccess(response));
   } catch (error) {
     yield put(actions.createMailAggregateFailure(error));

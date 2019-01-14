@@ -4,8 +4,8 @@ import { Accordion, Menu, Sidebar, Item, Icon } from 'semantic-ui-react';
 class DashboardSidebar extends Component {
   state = { activeIndex: 0 };
 
-  handleClick = (e, titleProps) => {
-    const { index } = titleProps;
+  handleClick = (e, elementProps) => {
+    const { index } = elementProps;
     this.setState({
       activeIndex: this.state.activeIndex === index ? -1 : index
     });
@@ -25,6 +25,7 @@ class DashboardSidebar extends Component {
           name="th large"
           active={activeIndex === 0}
           onClick={this.handleClick}
+          index={0}
         >
           <Icon name="th large" />
         </Menu.Item>
@@ -34,6 +35,7 @@ class DashboardSidebar extends Component {
           name="mail"
           active={activeIndex === 1}
           onClick={this.handleClick}
+          index={1}
         >
           <Icon name="mail" />
         </Menu.Item>

@@ -5,22 +5,24 @@ import {
   Form,
   Dropdown,
   Input,
-  Segment
+  Segment,
+  Label
 } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { EditorState, convertToRaw } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
-import { selectUsers, selectProfile } from 'selectors';
+import { selectAllUsers, selectProfile } from 'selectors';
 
-class ComposeEmail extends Component {
+export class ComposeEmail extends Component {
   initialState = {
     form: {
       to: [],
       cc: [],
       subject: '',
-      body: EditorState.createEmpty()
+      body: EditorState.createEmpty(),
+      required: ['to', 'subject']
     },
     error: {}
   };
@@ -34,7 +36,9 @@ class ComposeEmail extends Component {
     var target = obj.name;
     var value = obj.value;
 
-    this.setErrorFor(value, target);
+    if (this.state.form.required.includes(target)) {
+      this.setErrorFor(value, target);
+    }
     this.setState(state => {
       state.form[target] = value;
       return state;
@@ -50,26 +54,21 @@ class ComposeEmail extends Component {
 
   setErrorFor(value, target) {
     this.setState(state => {
-      state.error[target] = !Boolean(value);
+      state.error[target] =
+        (Array.isArray(value) && !value.length) || !Boolean(value);
       return state;
     });
   }
 
   onSend = () => {
-    console.log(this);
     let foundError = false;
     const to = this.state.form['to'];
     const cc = this.state.form['cc'];
     const subject = this.state.form['subject'];
     const body = convertToRaw(this.state.form['body'].getCurrentContent());
 
-    if (!to) {
+    if (!to.length) {
       this.setErrorFor(to, 'to');
-      foundError = true;
-    }
-
-    if (!cc) {
-      this.setErrorFor(cc, 'cc');
       foundError = true;
     }
 
@@ -110,6 +109,12 @@ class ComposeEmail extends Component {
       text: user.emailId
     }));
 
+    const requiredLabel = (
+      <Label basic color="orange" pointing>
+        Please enter a valuel
+      </Label>
+    );
+
     return (
       <Modal open={this.props.open} onClose={this.handleClose}>
         <Modal.Header>New message</Modal.Header>
@@ -125,12 +130,12 @@ class ComposeEmail extends Component {
                 selection
                 options={userList}
                 value={this.state.form.to}
-                error={this.state.error.to}
                 onChange={this.onFieldChange}
               />
+              {this.state.error.to && requiredLabel}
             </Form.Field>
 
-            <Form.Field required>
+            <Form.Field>
               <label>CC:</label>
               <Dropdown
                 placeholder="CC"
@@ -140,7 +145,6 @@ class ComposeEmail extends Component {
                 selection
                 options={userList}
                 value={this.state.form.cc}
-                error={this.state.error.cc}
                 onChange={this.onFieldChange}
               />
             </Form.Field>
@@ -151,9 +155,9 @@ class ComposeEmail extends Component {
                 placeholder="subject"
                 name="subject"
                 value={this.state.form.subject}
-                error={this.state.error.subject}
                 onChange={this.onFieldChange}
               />
+              {this.state.error.subject && requiredLabel}
             </Form.Field>
             <Form.Field required>
               <label>Message:</label>
@@ -184,7 +188,7 @@ class ComposeEmail extends Component {
           </Form>
         </Modal.Content>
         <Modal.Actions>
-          <Button color="black" onClick={this.handleClose}>
+          <Button color="black" name="cancel" onClick={this.handleClose}>
             Cancel
           </Button>
           <Button
@@ -192,6 +196,7 @@ class ComposeEmail extends Component {
             icon="send"
             labelPosition="right"
             content="Send"
+            name="send"
             onClick={this.onSend}
           />
         </Modal.Actions>
@@ -203,7 +208,7 @@ class ComposeEmail extends Component {
 const mapStateToProps = (state, props) => {
   return {
     profile: selectProfile(state),
-    users: selectUsers(state)
+    users: selectAllUsers(state)
   };
 };
 
